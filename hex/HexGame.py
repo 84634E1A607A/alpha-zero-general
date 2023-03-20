@@ -73,10 +73,10 @@ class HexGame(Game):
         return (new_board, -player)
 
     def getValidMoves(self, board: np.ndarray, player: int):
-        return np.where(board == _EMPTY, 1, 0)
+        return np.where(board == _EMPTY, 1, 0).ravel()
 
     def _out_of_map(self, p: tuple):
-        return tuple[0] < 0 or tuple[0] >= self.n or tuple[1] < 0 or tuple[1] >= self.n
+        return p[0] < 0 or p[0] >= self.n or p[1] < 0 or p[1] >= self.n
 
     def _red_player_won(self, board: np.ndarray) -> int:
         # Red won?
@@ -146,13 +146,12 @@ class HexGame(Game):
     def getSymmetries(self, board: np.ndarray, pi: int):
         # mirror, rotational
         pi_board = np.reshape(pi, (self.n, self.n))
-        _board = board.pieces
 
-        rotated_board = np.rot90(_board, 1)
+        rotated_board = np.rot90(board, 1)
         rotated_pi = np.rot90(pi_board, 1)
 
         return [
-            (np.rot90(_board, 2), np.rot90(pi_board, 2).ravel()),
+            (np.rot90(board, 2), np.rot90(pi_board, 2).ravel()),
             (np.fliplr(rotated_board), np.fliplr(rotated_pi).ravel()),
             (np.flipud(rotated_board), np.flipud(rotated_pi).ravel())
         ]
