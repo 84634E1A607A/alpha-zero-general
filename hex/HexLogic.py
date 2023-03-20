@@ -1,165 +1,126 @@
+import numpy as np
+from queue import Queue
+
+_RED = 1
+_BLUE = -1
+_EMPTY = 0
+
 '''
-Author: Eric P. Nichols
-Date: Feb 8, 2008.
+Author: Ajax Dong
 Board class.
 Board data:
-  1=white, -1=black, 0=empty
-  first dim is column , 2nd is row:
-     pieces[1][7] is the square in column 2,
-     at the opposite end of the board in row 8.
-Squares are stored and manipulated as (x,y) tuples.
-x is the column, y is the row.
+  1=Red, -1=Blue, 0=Empty
+
+    y
+   /
+R /
+ /
+o------> x
+   B
+
+board[x][y]
 '''
+
+_HEX_ADJACENT = [
+    (1, 0),
+    (-1, 0),
+    (0, 1),
+    (0, -1),
+    (1, -1),
+    (-1, 1)
+]
+
+
+def add(p1: tuple, p2: tuple):
+    return (p1[0]+p2[0], p1[1]+p2[1])
+
+
 class Board():
+    pieces: np.ndarray
 
-    # list of all 8 directions on the board, as (x,y) offsets
-    __directions = [(1,1),(1,0),(1,-1),(0,-1),(-1,-1),(-1,0),(-1,1),(0,1)]
+    def __init__(self, n: int = 11):
+        """Set up initial board configuration.
 
-    def __init__(self, n):
-        "Set up initial board configuration."
+        n: Size of the board
+        """
 
         self.n = n
-        # Create the empty board array.
-        self.pieces = [None]*self.n
-        for i in range(self.n):
-            self.pieces[i] = [0]*self.n
 
-        # Set up the initial 4 pieces.
-        self.pieces[int(self.n/2)-1][int(self.n/2)] = 1
-        self.pieces[int(self.n/2)][int(self.n/2)-1] = 1
-        self.pieces[int(self.n/2)-1][int(self.n/2)-1] = -1;
-        self.pieces[int(self.n/2)][int(self.n/2)] = -1;
+        # Create the empty board array.
+        self.pieces = np.zeros((n, n))
 
     # add [][] indexer syntax to the Board
-    def __getitem__(self, index): 
+    def __getitem__(self, index):
         return self.pieces[index]
 
-    def countDiff(self, color):
-        """Counts the # pieces of the given color
-        (1 for white, -1 for black, 0 for empty spaces)"""
-        count = 0
-        for y in range(self.n):
-            for x in range(self.n):
-                if self[x][y]==color:
-                    count += 1
-                if self[x][y]==-color:
-                    count -= 1
-        return count
-
-    def get_legal_moves(self, color):
+    def get_legal_moves(self, color: int):
         """Returns all the legal moves for the given color.
-        (1 for white, -1 for black
         """
-        moves = set()  # stores the legal moves.
 
-        # Get all the squares with pieces of the given color.
+        return np.where(self.pieces == _EMPTY, 1, 0)
+
+    def execute_move(self, move: tuple(int, int), color: int):
+        """Perform the given move on the board
+        """
+
+        self.pieces[move] = color
+
+    def _out_of_map(self, p: tuple):
+        return tuple[0] < 0 or tuple[0] >= self.n or tuple[1] < 0 or tuple[1] >= self.n
+
+    def _red_player_won(self) -> int:
+        # Red won?
+        red_queue = Queue()
+
         for y in range(self.n):
-            for x in range(self.n):
-                if self[x][y]==color:
-                    newmoves = self.get_moves_for_square((x,y))
-                    moves.update(newmoves)
-        return list(moves)
+            if self.pieces[0, y] == _RED:
+                red_queue.put((0, y))
 
-    def has_legal_moves(self, color):
-        for y in range(self.n):
-            for x in range(self.n):
-                if self[x][y]==color:
-                    newmoves = self.get_moves_for_square((x,y))
-                    if len(newmoves)>0:
-                        return True
-        return False
+        red_visited = np.zeros((11, 11))
 
-    def get_moves_for_square(self, square):
-        """Returns all the legal moves that use the given square as a base.
-        That is, if the given square is (3,4) and it contains a black piece,
-        and (3,5) and (3,6) contain white pieces, and (3,7) is empty, one
-        of the returned moves is (3,7) because everything from there to (3,4)
-        is flipped.
-        """
-        (x,y) = square
+        while len(red_queue) != 0:
+            red_point = red_queue.pop()
 
-        # determine the color of the piece.
-        color = self[x][y]
+            if (red_point[0] == self.n - 1):
+                return 1
 
-        # skip empty source squares.
-        if color==0:
-            return None
+            red_visited[red_point] = 1
 
-        # search all possible directions.
-        moves = []
-        for direction in self.__directions:
-            move = self._discover_move(square, direction)
-            if move:
-                # print(square,move,direction)
-                moves.append(move)
+            for adjacent in _HEX_ADJACENT:
+                p = add(red_point, adjacent)
+                if (self._out_of_map(p) or red_visited[p]):
+                    continue
 
-        # return the generated move list
-        return moves
+                if (self.pieces[p] == _RED):
+                    red_queue.put(p)
 
-    def execute_move(self, move, color):
-        """Perform the given move on the board; flips pieces as necessary.
-        color gives the color pf the piece to play (1=white,-1=black)
-        """
+        # Blue won?
+        blue_queue = Queue()
 
-        #Much like move generation, start at the new piece's square and
-        #follow it on all 8 directions to look for a piece allowing flipping.
+        for x in range(self.n):
+            if self.pieces[x, 0] == _BLUE:
+                blue_queue.put((x, 0))
 
-        # Add the piece to the empty square.
-        # print(move)
-        flips = [flip for direction in self.__directions
-                      for flip in self._get_flips(move, direction, color)]
-        assert len(list(flips))>0
-        for x, y in flips:
-            #print(self[x][y],color)
-            self[x][y] = color
+        blue_visited = np.zeros((11, 11))
 
-    def _discover_move(self, origin, direction):
-        """ Returns the endpoint for a legal move, starting at the given origin,
-        moving by the given increment."""
-        x, y = origin
-        color = self[x][y]
-        flips = []
+        while len(blue_queue) != 0:
+            blue_point = blue_queue.pop()
 
-        for x, y in Board._increment_move(origin, direction, self.n):
-            if self[x][y] == 0:
-                if flips:
-                    # print("Found", x,y)
-                    return (x, y)
-                else:
-                    return None
-            elif self[x][y] == color:
-                return None
-            elif self[x][y] == -color:
-                # print("Flip",x,y)
-                flips.append((x, y))
+            if (blue_point[1] == self.n - 1):
+                return -1
 
-    def _get_flips(self, origin, direction, color):
-        """ Gets the list of flips for a vertex and direction to use with the
-        execute_move function """
-        #initialize variables
-        flips = [origin]
+            blue_visited[blue_point] = 1
 
-        for x, y in Board._increment_move(origin, direction, self.n):
-            #print(x,y)
-            if self[x][y] == 0:
-                return []
-            if self[x][y] == -color:
-                flips.append((x, y))
-            elif self[x][y] == color and len(flips) > 0:
-                #print(flips)
-                return flips
+            for adjacent in _HEX_ADJACENT:
+                p = add(blue_point, adjacent)
+                if (self._out_of_map(p) or blue_visited[p]):
+                    continue
 
-        return []
+                if (self.pieces[p] == _BLUE):
+                    blue_queue.put(p)
 
-    @staticmethod
-    def _increment_move(move, direction, n):
-        # print(move)
-        """ Generator expression for incrementing moves """
-        move = list(map(sum, zip(move, direction)))
-        #move = (move[0]+direction[0], move[1]+direction[1])
-        while all(map(lambda x: 0 <= x < n, move)): 
-        #while 0<=move[0] and move[0]<n and 0<=move[1] and move[1]<n:
-            yield move
-            move=list(map(sum,zip(move,direction)))
-            #move = (move[0]+direction[0],move[1]+direction[1])
+        return 0
 
+    def player_won(self, color: int) -> int:
+        # return 0 if not ended, 1 if player won, -1 if player lost
+        return color * self._red_player_won()
