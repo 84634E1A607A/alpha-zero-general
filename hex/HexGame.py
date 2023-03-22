@@ -53,7 +53,7 @@ class HexGame(Game):
 
     def getInitBoard(self):
         # return initial board (numpy board)
-        return np.zeros((self.n, self.n))
+        return np.zeros((self.n, self.n), dtype=np.int8)
 
     def getBoardSize(self):
         # (a,b) tuple
@@ -78,7 +78,7 @@ class HexGame(Game):
         # Red won?
         red_queue = deque([(0, y) for y in range(self.n) if board[0, y] == _RED])
 
-        red_visited = np.zeros((11, 11))
+        red_visited = np.zeros((11, 11), dtype=np.int8)
 
         while len(red_queue) > 0:
             r_x, r_y = red_queue.popleft()
@@ -99,7 +99,7 @@ class HexGame(Game):
         # Blue won?
         blue_queue = deque([(x, 0) for x in range(self.n) if board[x, 0] == _BLUE])
 
-        blue_visited = np.zeros((11, 11))
+        blue_visited = np.zeros((11, 11), dtype=np.int8)
 
         while len(blue_queue) > 0:
             b_x, b_y = blue_queue.popleft()
@@ -129,7 +129,10 @@ class HexGame(Game):
 
     def getCanonicalForm(self, board: np.ndarray, player: int):
         # return state if player==1, else return -state if player==-1
-        return player * board
+        if (player == _BLUE):
+            return -1 * np.rot90(np.flipud(board), 1)
+
+        return board
 
     def getSymmetries(self, board: np.ndarray, pi: int):
         # mirror, rotational
@@ -144,5 +147,5 @@ class HexGame(Game):
             (np.flipud(rotated_board), np.flipud(rotated_pi).ravel())
         ]
 
-    def stringRepresentation(self, board):
+    def stringRepresentation(self, board: np.ndarray):
         return board.tostring()

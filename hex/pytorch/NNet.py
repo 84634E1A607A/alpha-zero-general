@@ -17,7 +17,7 @@ from .HexNNet import HexNNet
 args = dotdict({
     'lr': 0.001,
     'dropout': 0.3,
-    'epochs': 10,
+    'epochs': 10, # Original: 10
     'batch_size': 64,
     'cuda': torch.cuda.is_available(),
     'num_channels': 512,
@@ -82,7 +82,7 @@ class NNetWrapper(NeuralNet):
         # timing
         # start = time.time()
 
-        mask = (board == 0).ravel()
+        # mask = (board == 0).ravel()
 
         # preparing input
         board = torch.FloatTensor(board.astype(np.float64))
@@ -94,7 +94,7 @@ class NNetWrapper(NeuralNet):
             pi = pi[0].ravel()
 
         # print('PREDICTION TIME TAKEN : {0:03f}'.format(time.time()-start))
-        return torch.exp(pi).data.cpu().numpy() * mask, v.data.cpu().numpy()[0]
+        return torch.exp(pi).data.cpu().numpy(), v.data.cpu().numpy()[0]
 
     def loss_pi(self, targets, outputs):
         return -torch.sum(targets * outputs) / targets.size()[0]
