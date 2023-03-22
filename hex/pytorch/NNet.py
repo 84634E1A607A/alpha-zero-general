@@ -79,10 +79,6 @@ class NNetWrapper(NeuralNet):
         """
         board: np array with board
         """
-        # timing
-        # start = time.time()
-
-        # mask = (board == 0).ravel()
 
         # preparing input
         board = torch.FloatTensor(board.astype(np.float64))
@@ -93,7 +89,6 @@ class NNetWrapper(NeuralNet):
             pi, v = self.nnet(board)
             pi = pi[0].ravel()
 
-        # print('PREDICTION TIME TAKEN : {0:03f}'.format(time.time()-start))
         return torch.exp(pi).data.cpu().numpy(), v.data.cpu().numpy()[0]
 
     def loss_pi(self, targets, outputs):

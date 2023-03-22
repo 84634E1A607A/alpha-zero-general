@@ -5,21 +5,6 @@ import sys
 from collections import deque
 sys.path.append('..')
 
-_RED = 1
-_BLUE = -1
-_EMPTY = 0
-
-
-_HEX_ADJACENT = [
-    (1, 0),
-    (-1, 0),
-    (0, 1),
-    (0, -1),
-    (1, -1),
-    (-1, 1)
-]
-
-
 '''
 Author: Ajax Dong
 Board class.
@@ -36,6 +21,20 @@ o------> x
 board[x][y]
 '''
 
+_RED = 1
+_BLUE = -1
+_EMPTY = 0
+
+
+_HEX_ADJACENT = [
+    (1, 0),
+    (-1, 0),
+    (0, 1),
+    (0, -1),
+    (1, -1),
+    (-1, 1)
+]
+
 
 class HexGame(Game):
     square_content = {
@@ -50,6 +49,7 @@ class HexGame(Game):
 
     def __init__(self, n: int = 11):
         self.n = n
+        self.sz = n * n
 
     def getInitBoard(self):
         # return initial board (numpy board)
@@ -61,11 +61,11 @@ class HexGame(Game):
 
     def getActionSize(self):
         # return number of actions
-        return self.n*self.n
+        return self.sz
 
     def getNextState(self, board: np.ndarray, player: int, action: int):
         new_board: np.ndarray = np.copy(board)
-        new_board[int(action/self.n), action % self.n] = player
+        new_board[action // self.n, action % self.n] = player
         return (new_board, -player)
 
     def getValidMoves(self, board: np.ndarray, player: int):
@@ -76,15 +76,13 @@ class HexGame(Game):
 
     def _red_player_won(self, board: np.ndarray) -> int:
         # Red won?
-        red_queue = deque([(0, y) for y in range(self.n) if board[0, y] == _RED])
+        red_queue = deque([(0, y)
+                          for y in range(self.n) if board[0, y] == _RED])
 
         red_visited = np.zeros((11, 11), dtype=np.int8)
 
         while len(red_queue) > 0:
             r_x, r_y = red_queue.popleft()
-
-            if (r_x == self.n - 1):
-                return 1
 
             red_visited[r_x, r_y] = 1
 
@@ -94,18 +92,19 @@ class HexGame(Game):
                     continue
 
                 if (board[p] == _RED):
+                    if (p[0] == self.n - 1):
+                        return 1
+
                     red_queue.append(p)
 
         # Blue won?
-        blue_queue = deque([(x, 0) for x in range(self.n) if board[x, 0] == _BLUE])
+        blue_queue = deque([(x, 0)
+                           for x in range(self.n) if board[x, 0] == _BLUE])
 
         blue_visited = np.zeros((11, 11), dtype=np.int8)
 
         while len(blue_queue) > 0:
             b_x, b_y = blue_queue.popleft()
-
-            if (b_y == self.n - 1):
-                return -1
 
             blue_visited[b_x, b_y] = 1
 
@@ -115,13 +114,16 @@ class HexGame(Game):
                     continue
 
                 if (board[p] == _BLUE):
+                    if (p[1] == self.n - 1):
+                        return -1
+
                     blue_queue.append(p)
 
         return 0
 
-    def player_won(self, board: np.ndarray, color: int) -> int:
+    def player_won(self, board: np.ndarray, player: int) -> int:
         # return 0 if not ended, 1 if player won, -1 if player lost
-        return color * self._red_player_won(board)
+        return player * self._red_player_won(board)
 
     def getGameEnded(self, board: np.ndarray, player: int):
         # return 0 if not ended, 1 if player won, -1 if player lost
@@ -130,7 +132,7 @@ class HexGame(Game):
     def getCanonicalForm(self, board: np.ndarray, player: int):
         # return state if player==1, else return -state if player==-1
         if (player == _BLUE):
-            return -1 * np.rot90(np.flipud(board), 1)
+            return -np.fliplr(np.rot90(board, 1))
 
         return board
 
