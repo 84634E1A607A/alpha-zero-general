@@ -75,12 +75,14 @@ class NNetWrapper(NeuralNet):
                 total_loss.backward()
                 optimizer.step()
 
-    def predict(self, board):
+    def predict(self, board: np.ndarray):
         """
         board: np array with board
         """
         # timing
-        start = time.time()
+        # start = time.time()
+
+        mask = (board == 0).ravel()
 
         # preparing input
         board = torch.FloatTensor(board.astype(np.float64))
@@ -89,9 +91,10 @@ class NNetWrapper(NeuralNet):
         self.nnet.eval()
         with torch.no_grad():
             pi, v = self.nnet(board)
+            pi = pi[0].ravel()
 
         # print('PREDICTION TIME TAKEN : {0:03f}'.format(time.time()-start))
-        return torch.exp(pi).data.cpu().numpy()[0], v.data.cpu().numpy()[0]
+        return torch.exp(pi).data.cpu().numpy() * mask, v.data.cpu().numpy()[0]
 
     def loss_pi(self, targets, outputs):
         return -torch.sum(targets * outputs) / targets.size()[0]
@@ -113,7 +116,7 @@ class NNetWrapper(NeuralNet):
         # https://github.com/pytorch/examples/blob/master/imagenet/main.py#L98
         filepath = os.path.join(folder, filename)
         if not os.path.exists(filepath):
-            raise ("No model in path {}".format(filepath))
+            raise Exception("No model in path {}".format(filepath))
         map_location = None if args.cuda else 'cpu'
         checkpoint = torch.load(filepath, map_location=map_location)
         self.nnet.load_state_dict(checkpoint['state_dict'])
