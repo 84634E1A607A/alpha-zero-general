@@ -15,12 +15,12 @@ import torch.optim as optim
 from .HexNNet import HexNNet
 
 args = dotdict({
-    'lr': 0.005,
+    'lr': 0.003,
     'dropout': 0.3,
     'epochs': 10, # Original: 10
     'batch_size': 64,
     'cuda': torch.cuda.is_available(),
-    'num_channels': 512,
+    'num_channels': 128,
 })
 
 
