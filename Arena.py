@@ -1,6 +1,7 @@
 import logging
 
 from tqdm import tqdm
+from Game import Game
 
 log = logging.getLogger(__name__)
 
@@ -10,7 +11,7 @@ class Arena():
     An Arena class where any 2 agents can be pit against each other.
     """
 
-    def __init__(self, player1, player2, game, display=None):
+    def __init__(self, player1, player2, game: Game, display=None):
         """
         Input:
             player 1,2: two functions that takes board as input, return action
@@ -56,10 +57,15 @@ class Arena():
                 log.debug(f'valids = {valids}')
                 assert valids[action] > 0
             board, curPlayer = self.game.getNextState(board, curPlayer, action)
+
         if verbose:
             assert self.display
             print("Game over: Turn ", str(it), "Result ", str(self.game.getGameEnded(board, 1)))
             self.display(board)
+
+        print(f"Game over: Turn {str(it)}, {'Previous' if self.game.getGameEnded(board, 1) == 1 else 'Current'} wins")
+        self.display(board)
+
         return curPlayer * self.game.getGameEnded(board, curPlayer)
 
     def playGames(self, num, verbose=False):

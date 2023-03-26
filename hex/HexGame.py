@@ -38,9 +38,9 @@ _HEX_ADJACENT = [
 
 class HexGame(Game):
     square_content = {
-        -1: "X",
+        -1: "b",
         +0: "-",
-        +1: "O"
+        +1: "r"
     }
 
     @staticmethod
@@ -127,7 +127,9 @@ class HexGame(Game):
 
     def getGameEnded(self, board: np.ndarray, player: int):
         # return 0 if not ended, 1 if player won, -1 if player lost
-        return self._player_won(board, player)
+        e = self._player_won(board, player)
+
+        return e
 
     def getCanonicalForm(self, board: np.ndarray, player: int):
         # return state if player==1, else return -state if player==-1
@@ -144,3 +146,15 @@ class HexGame(Game):
 
     def stringRepresentation(self, board: np.ndarray):
         return board.tostring()
+
+    def display(self, board: np.ndarray):
+        n = self.n
+        print(" " * (n + 1) + "B\n", end="")
+        for y in range(n - 1, -1, -1):
+            print(" " * (y + 1) + "/", end="")
+            for x in range(n):
+                print(" " + HexGame.getSquarePiece(board[x, y]), end="")
+
+            print("\n", end="")
+
+        print("O" + "-" * 2 * n + "R\n\n", end="")
