@@ -64,6 +64,7 @@ class HexGame(Game):
         return self.sz
 
     def getNextState(self, board: np.ndarray, player: int, action: int):
+        assert board[action // self.n, action % self.n] == 0
         new_board: np.ndarray = np.copy(board)
         new_board[action // self.n, action % self.n] = player
         return (new_board, -player)
@@ -134,9 +135,16 @@ class HexGame(Game):
     def getCanonicalForm(self, board: np.ndarray, player: int):
         # return state if player==1, else return -state if player==-1
         if (player == _BLUE):
-            return -np.fliplr(np.rot90(board, 1))
+            return -np.flipud(np.rot90(board, 1))
 
         return board
+    
+    def getActionCanonicalForm(self, action: int, player: int):
+        if (player == _BLUE):
+            x, y = action // self.n, action % self.n
+            return self.n * y + x
+
+        return action
 
     def getSymmetries(self, board: np.ndarray, pi: int):
         # only one rotational

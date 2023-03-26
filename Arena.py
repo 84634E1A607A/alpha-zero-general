@@ -56,7 +56,7 @@ class Arena():
                 log.error(f'Action {action} is not valid!')
                 log.debug(f'valids = {valids}')
                 assert valids[action] > 0
-            board, curPlayer = self.game.getNextState(board, curPlayer, action)
+            board, curPlayer = self.game.getNextState(board, curPlayer, self.game.getActionCanonicalForm(action, curPlayer))
 
         if verbose:
             assert self.display
@@ -64,7 +64,7 @@ class Arena():
             self.display(board)
 
         print(f"Game over: Turn {str(it)}, {'Previous' if self.game.getGameEnded(board, 1) == 1 else 'Current'} wins")
-        self.display(board)
+        self.game.display(board)
 
         return curPlayer * self.game.getGameEnded(board, curPlayer)
 
