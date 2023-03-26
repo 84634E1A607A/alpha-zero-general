@@ -15,7 +15,7 @@ import torch.optim as optim
 from .HexNNet import HexNNet
 
 args = dotdict({
-    'lr': 0.001,
+    'lr': 0.005,
     'dropout': 0.3,
     'epochs': 10, # Original: 10
     'batch_size': 64,
