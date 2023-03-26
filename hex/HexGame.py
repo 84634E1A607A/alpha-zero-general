@@ -121,13 +121,13 @@ class HexGame(Game):
 
         return 0
 
-    def player_won(self, board: np.ndarray, player: int) -> int:
+    def _player_won(self, board: np.ndarray, player: int) -> int:
         # return 0 if not ended, 1 if player won, -1 if player lost
         return player * self._red_player_won(board)
 
     def getGameEnded(self, board: np.ndarray, player: int):
         # return 0 if not ended, 1 if player won, -1 if player lost
-        return self.player_won(board, player)
+        return self._player_won(board, player)
 
     def getCanonicalForm(self, board: np.ndarray, player: int):
         # return state if player==1, else return -state if player==-1
@@ -137,17 +137,10 @@ class HexGame(Game):
         return board
 
     def getSymmetries(self, board: np.ndarray, pi: int):
-        # mirror, rotational
+        # only one rotational
         pi_board = np.reshape(pi, (self.n, self.n))
 
-        rotated_board = np.rot90(board, 1)
-        rotated_pi = np.rot90(pi_board, 1)
-
-        return [
-            (np.rot90(board, 2), np.rot90(pi_board, 2).ravel()),
-            (np.fliplr(rotated_board), np.fliplr(rotated_pi).ravel()),
-            (np.flipud(rotated_board), np.flipud(rotated_pi).ravel())
-        ]
+        return [(np.rot90(board, 2), np.rot90(pi_board, 2).ravel())]
 
     def stringRepresentation(self, board: np.ndarray):
         return board.tostring()
