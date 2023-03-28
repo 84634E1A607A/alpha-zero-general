@@ -63,9 +63,6 @@ class Arena():
             print("Game over: Turn ", str(it), "Result ", str(self.game.getGameEnded(board, 1)))
             self.display(board)
 
-        print(f"Game over: Turn {str(it)}, {'Previous' if self.game.getGameEnded(board, 1) == previous else 'Current'} wins")
-        self.game.display(board)
-
         return curPlayer * self.game.getGameEnded(board, curPlayer)
 
     def playGames(self, num, verbose=False):

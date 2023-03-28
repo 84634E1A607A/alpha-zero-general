@@ -64,7 +64,7 @@ class HexGame(Game):
         return self.sz
 
     def getNextState(self, board: np.ndarray, player: int, action: int):
-        assert board[action // self.n, action % self.n] == 0
+        # assert board[action // self.n, action % self.n] == 0
         new_board: np.ndarray = np.copy(board)
         new_board[action // self.n, action % self.n] = player
         return (new_board, -player)
@@ -72,7 +72,7 @@ class HexGame(Game):
     def getValidMoves(self, board: np.ndarray, player: int):
         return np.where(board == _EMPTY, 1, 0).ravel()
 
-    def _out_of_map(self, p: tuple):
+    def isOutOfMap(self, p: tuple):
         return p[0] < 0 or p[0] >= self.n or p[1] < 0 or p[1] >= self.n
 
     def _red_player_won(self, board: np.ndarray) -> int:
@@ -89,7 +89,7 @@ class HexGame(Game):
 
             for a_x, a_y in _HEX_ADJACENT:
                 p = (r_x + a_x, r_y + a_y)
-                if (self._out_of_map(p) or red_visited[p]):
+                if (self.isOutOfMap(p) or red_visited[p]):
                     continue
 
                 if (board[p] == _RED):
@@ -111,7 +111,7 @@ class HexGame(Game):
 
             for a_x, a_y in _HEX_ADJACENT:
                 p = (b_x + a_x, b_y + a_y)
-                if (self._out_of_map(p) or blue_visited[p]):
+                if (self.isOutOfMap(p) or blue_visited[p]):
                     continue
 
                 if (board[p] == _BLUE):
@@ -155,14 +155,17 @@ class HexGame(Game):
     def stringRepresentation(self, board: np.ndarray):
         return board.tostring()
 
-    def display(self, board: np.ndarray):
-        n = self.n
+    @staticmethod
+    def display(board: np.ndarray, mark: bool = False):
+        n = board.shape[0]
         print(" " * (n + 1) + "B\n", end="")
         for y in range(n - 1, -1, -1):
-            print(" " * (y + 1) + "/", end="")
+            print((("%2s" % (y+1)) if mark else "") + " " * (y + 1) + "/", end="")
             for x in range(n):
                 print(" " + HexGame.getSquarePiece(board[x, y]), end="")
 
             print("\n", end="")
 
         print("O" + "-" * 2 * n + "R\n\n", end="")
+        if mark:
+            print(" " + "".join([("%2s" % x) for x in range(1, n + 1)]))

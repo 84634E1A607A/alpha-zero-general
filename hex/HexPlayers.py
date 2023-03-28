@@ -1,58 +1,55 @@
 import numpy as np
+from hex.HexGame import HexGame as Game
 
 
 class RandomPlayer():
-    def __init__(self, game):
+    def __init__(self, game: Game):
         self.game = game
 
     def play(self, board):
-        a = np.random.randint(self.game.getActionSize())
+        valids = np.argwhere(self.game.getValidMoves(board, 1) == 1)
+        r = np.random.randint(valids.size)
+        return valids[r][0]
+
+
+class StupidPlayer():
+    def __init__(self, game: Game):
+        self.game = game
+
+    def play(self, board):
         valids = self.game.getValidMoves(board, 1)
-        while valids[a] != 1:
-            a = np.random.randint(self.game.getActionSize())
-        return a
+        return np.argwhere(valids == 1)[0][0]
+
+class DirectPlayer():
+    def __init__(self, game: Game):
+        self.game = game
+        self.iter = 0
+
+    def play(self, board):
+        while (board[self.iter % self.game.n, self.iter // self.game.n] != 0):
+            self.iter += 1
+        return (self.iter % self.game.n) * self.game.n + self.iter // self.game.n
 
 
-class HumanOthelloPlayer():
-    def __init__(self, game):
+class HumanPlayer():
+    def __init__(self, game: Game):
         self.game = game
 
     def play(self, board):
-        # display(board)
+        Game.display(board, True)
         valid = self.game.getValidMoves(board, 1)
-        for i in range(len(valid)):
-            if valid[i]:
-                print("[", int(i/self.game.n), int(i % self.game.n), end="] ")
         while True:
-            input_move = input()
+            input_move = input("Enter a move (R B e.g. 1 1):")
             input_a = input_move.split(" ")
             if len(input_a) == 2:
                 try:
                     x, y = [int(i) for i in input_a]
-                    if ((0 <= x) and (x < self.game.n) and (0 <= y) and (y < self.game.n)) or \
-                            ((x == self.game.n) and (y == 0)):
-                        a = self.game.n * x + y if x != -1 else self.game.n ** 2
+                    if not self.game.isOutOfMap((x, y)):
+                        a = self.game.n * x + y
                         if valid[a]:
                             break
-                except ValueError:
-                    # Input needs to be an integer
-                    'Invalid integer'
+                except:
+                    pass
+
             print('Invalid move')
         return a
-
-
-class GreedyOthelloPlayer():
-    def __init__(self, game):
-        self.game = game
-
-    def play(self, board):
-        valids = self.game.getValidMoves(board, 1)
-        candidates = []
-        for a in range(self.game.getActionSize()):
-            if valids[a] == 0:
-                continue
-            nextBoard, _ = self.game.getNextState(board, 1, a)
-            score = self.game.getScore(nextBoard, 1)
-            candidates += [(-score, a)]
-        candidates.sort()
-        return candidates[0][1]

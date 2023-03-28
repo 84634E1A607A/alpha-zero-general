@@ -13,7 +13,7 @@ coloredlogs.install(level='INFO')  # Change this to DEBUG to see more info.
 
 args = dotdict({
     'numIters': 1000,
-    'numEps': 200,              # Number of complete self-play games to simulate during a new iteration. Original: 100
+    'numEps': 500,              # Number of complete self-play games to simulate during a new iteration. Original: 100
     'tempThreshold': 15,        #
     'updateThreshold': 0.6,     # During arena playoff, new neural net will be accepted if threshold or more of games are won.
     'maxlenOfQueue': 200000,    # Number of game examples to train the neural networks.
@@ -22,7 +22,7 @@ args = dotdict({
     'cpuct': 20,
 
     'checkpoint': './temp/',
-    'load_model': False,
+    'load_model': True,
     'load_folder_file': ('temp/','best.pth.tar'),
     'numItersForTrainExamplesHistory': 20,
 })
@@ -30,7 +30,7 @@ args = dotdict({
 
 def main():
     log.info('Loading %s...', Game.__name__)
-    g = Game()
+    g = Game(7)
 
     log.info('Loading %s...', nn.__name__)
     nnet = nn(g)
