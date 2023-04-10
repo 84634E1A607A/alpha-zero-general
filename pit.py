@@ -13,10 +13,11 @@ use this script to play any two agents against each other, or play manually with
 any agent.
 """
 
-g = HexGame(7)
+g = HexGame()
 
 # all players
-rp = DirectPlayer(g).play
+dp = DirectPlayer(g).play
+rp = RandomPlayer(g).play
 
 
 # nnet players
@@ -29,4 +30,4 @@ def n1p(x): return np.argmax(mcts1.getActionProb(x, temp=0))
 
 arena = Arena.Arena(n1p, rp, g, display=HexGame.display)
 
-print(arena.playGames(2, verbose=True))
+print(arena.playGames(6, verbose=True))
