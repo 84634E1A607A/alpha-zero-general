@@ -27,7 +27,20 @@ args1 = dotdict({'numMCTSSims': 50, 'cpuct': 20})
 mcts1 = MCTS(g, n1, args1)
 def n1p(x): return np.argmax(mcts1.getActionProb(x, temp=0))
 
+n2 = NNet(g, dotdict({
+    'lr': 0.001,
+    'dropout': 0.3,
+    'epochs': 10, # Original: 10
+    'batch_size': 64,
+    'cuda': False,
+    'num_channels': 64,
+}))
+n2.load_checkpoint("./temp/", "best-64-channels.pth.tar")
+args2 = dotdict({'numMCTSSims': 50, 'cpuct': 20})
+mcts2 = MCTS(g, n2, args2)
+def n2p(x): return np.argmax(mcts2.getActionProb(x, temp=0))
 
-arena = Arena.Arena(n1p, rp, g, display=HexGame.display)
+
+arena = Arena.Arena(n1p, n2p, g, display=HexGame.display)
 
 print(arena.playGames(6, verbose=True))
