@@ -28,6 +28,7 @@ class DirectPlayer():
     def play(self, board):
         while (board[self.iter % self.game.n, self.iter // self.game.n] != 0):
             self.iter += 1
+            self.iter %= board.size
         return (self.iter % self.game.n) * self.game.n + self.iter // self.game.n
 
 
