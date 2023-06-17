@@ -41,6 +41,6 @@ mcts2 = MCTS(g, n2, args2)
 def n2p(x): return np.argmax(mcts2.getActionProb(x, temp=0))
 
 
-arena = Arena.Arena(n1p, dp, g, display=HexGame.display)
+arena = Arena.Arena(n1p, rp, g, display=HexGame.display)
 
 print(arena.playGames(6, verbose=True))
